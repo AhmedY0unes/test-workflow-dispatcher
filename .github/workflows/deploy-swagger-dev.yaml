@@ -1,0 +1,31 @@
+name: deploy-swagger-dev
+on:
+    push:
+        branches:
+            - dev
+        paths:
+            - 'packages/swagger/**'
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - run: cd packages/swagger && docker build -t examlab/swagger-dev .
+            - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+              env:
+                  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+                  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+            - run: docker push examlab/swagger-dev
+            - name: Azure Login
+              uses: azure/login@v1
+              with:
+                  creds: ${{ secrets.AZURE_CREDENTIALS_DEV }}
+
+            - name: Gets K8s context
+              uses: azure/aks-set-context@v1
+              with:
+                  creds: ${{ secrets.AZURE_CREDENTIALS_DEV }}
+                  resource-group: ${{ secrets.RESOURCE_GROUP }}
+                  cluster-name: ${{ secrets.CLUSTER_NAME_DEV }}
+              id: login
+            - run: kubectl rollout restart deployment swagger-depl

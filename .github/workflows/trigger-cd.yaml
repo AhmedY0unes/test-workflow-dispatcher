@@ -1,0 +1,51 @@
+name: Trigger CDs
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: string
+        description: "branch name to checkout for deployments"
+        required: true
+        default: "dev"
+jobs:
+  runs-auth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger-cd-workflows
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: deploy-auth-${{inputs.branch}}
+          token: ${{ secrets.GITHUB_TOKEN }}
+  runs-courses:
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger-cd-workflows
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: deploy-courses-${{inputs.branch}}
+          token: ${{ secrets.GITHUB_TOKEN }}
+  runs-grading:
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger-cd-workflows
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: deploy-grading-${{inputs.branch}}
+          token: ${{ secrets.GITHUB_TOKEN }}
+  runs-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger-cd-workflows
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: deploy-manifest-${{inputs.branch}}
+          token: ${{ secrets.GITHUB_TOKEN }}
+  runs-swagger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger-cd-workflows
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: deploy-swagger-${{inputs.branch}}
+          token: ${{ secrets.GITHUB_TOKEN }}

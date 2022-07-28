@@ -1,0 +1,18 @@
+name: courses_test
+
+on:
+    pull_request:
+        paths:
+            - "packages/courses/**"
+jobs:
+    bulid:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - run: cd packages/courses && npm install && npm run test:ci -p get_
+            - run: cd packages/courses && npm install && npm run test:ci -p create_
+            - run: cd packages/courses && npm install && npm run test:ci -p delete_
+            - run: cd packages/courses && npm install && npm run test:ci -p update_
+            - run: cd packages/courses && npm install && npm run test:ci -p ready
+            - run: cd packages/courses && npm install && npm run test:ci -p generate_
+            - run: cd packages/courses && npm install && npm run test:ci -p upload

@@ -1,0 +1,31 @@
+name: deploy-courses-prod
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - 'packages/courses/**'
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - run: cd packages/courses && docker build -t examlab/courses .
+            - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+              env:
+                  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+                  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+            - run: docker push examlab/courses
+            - name: Azure Login
+              uses: azure/login@v1
+              with:
+                  creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+            - name: Gets K8s context
+              uses: azure/aks-set-context@v1
+              with:
+                  creds: ${{ secrets.AZURE_CREDENTIALS }}
+                  resource-group: ${{ secrets.RESOURCE_GROUP }}
+                  cluster-name: ${{ secrets.CLUSTER_NAME }}
+              id: login
+            - run: kubectl rollout restart deployment courses-depl

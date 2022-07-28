@@ -1,0 +1,22 @@
+name: auth_test
+
+on:
+  pull_request:
+    paths:
+      - "packages/auth/**"
+jobs:
+  bulid:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd packages/auth && npm install
+      # - run: cd packages/auth && npm install && npm run test:ci
+      - run: cd packages/auth && npm run test:ci -p add_user.test.ts
+      - run: cd packages/auth && npm run test:ci -p email_verification.test.ts
+      - run: cd packages/auth && npm run test:ci -p delete_user.test.ts
+      - run: cd packages/auth && npm run test:ci -p get-users.test.ts
+      - run: cd packages/auth && npm run test:ci -p search.test.ts
+      - run: cd packages/auth && npm run test:ci -p signin.test.ts
+      - run: cd packages/auth && npm run test:ci -p signout.test.ts
+      - run: cd packages/auth && npm run test:ci -p signup.test.ts
+      - run: cd packages/auth && npm run test:ci -p update.test.ts
