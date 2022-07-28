@@ -4,7 +4,8 @@ on:
         branches:
             - dev
         paths:
-            - 'packages/auth/**'
+            - "packages/auth/**"
+    workflow_dispatch:
 jobs:
     build:
         runs-on: ubuntu-latest
