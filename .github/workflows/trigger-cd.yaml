@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        type: string
+        type: choice
         description: "branch name to checkout for deployments"
         required: true
         default: "dev"
