@@ -8,6 +8,10 @@ on:
         description: "branch name to checkout for deployments"
         required: true
         default: "dev"
+        options:
+          - dev
+          - master
+          - staging
 jobs:
   runs-auth:
     runs-on: ubuntu-latest
