@@ -16,7 +16,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: deploy-auth-${{inputs.branch}}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.MAIN_GITHUB_TOKEN }}
   runs-courses:
     runs-on: ubuntu-latest
     steps:
@@ -24,7 +24,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: deploy-courses-${{inputs.branch}}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.MAIN_GITHUB_TOKEN }}
   runs-grading:
     runs-on: ubuntu-latest
     steps:
@@ -32,7 +32,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: deploy-grading-${{inputs.branch}}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.MAIN_GITHUB_TOKEN }}
   runs-manifest:
     runs-on: ubuntu-latest
     steps:
@@ -40,7 +40,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: deploy-manifest-${{inputs.branch}}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.MAIN_GITHUB_TOKEN }}
   runs-swagger:
     runs-on: ubuntu-latest
     steps:
@@ -48,4 +48,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: deploy-swagger-${{inputs.branch}}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.MAIN_GITHUB_TOKEN }}
