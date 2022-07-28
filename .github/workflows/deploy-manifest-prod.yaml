@@ -5,8 +5,8 @@ on:
         branches:
             - main
         paths:
-            - 'packages/infra/**'
-
+            - "packages/infra/**"
+    workflow_dispatch:
 jobs:
     build:
         runs-on: ubuntu-latest

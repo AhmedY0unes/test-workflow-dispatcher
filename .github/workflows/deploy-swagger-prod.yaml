@@ -4,7 +4,8 @@ on:
         branches:
             - main
         paths:
-            - 'packages/swagger/**'
+            - "packages/swagger/**"
+    workflow_dispatch:
 jobs:
     build:
         runs-on: ubuntu-latest

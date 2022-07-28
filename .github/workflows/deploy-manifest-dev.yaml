@@ -5,7 +5,8 @@ on:
         branches:
             - dev
         paths:
-            - 'packages/infra/**'
+            - "packages/infra/**"
+    workflow_dispatch:
 
 jobs:
     build:

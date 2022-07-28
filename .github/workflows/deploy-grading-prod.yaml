@@ -5,8 +5,8 @@ on:
         branches:
             - main
         paths:
-            - 'packages/grading/**'
-            
+            - "packages/grading/**"
+    workflow_dispatch:
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -29,6 +29,6 @@ jobs:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
                   resource-group: ${{ secrets.RESOURCE_GROUP }}
                   cluster-name: ${{ secrets.CLUSTER_NAME }}
-                  
+
               id: login
             - run: kubectl rollout restart deployment grading-depl
