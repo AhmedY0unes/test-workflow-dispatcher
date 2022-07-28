@@ -11,19 +11,4 @@ jobs:
     build:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v2
-
-            - name: Azure Login
-              uses: azure/login@v1
-              with:
-                  creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-            - name: Gets K8s context
-              uses: azure/aks-set-context@v1
-              with:
-                  creds: ${{ secrets.AZURE_CREDENTIALS }}
-                  resource-group: ${{ secrets.RESOURCE_GROUP }}
-                  cluster-name: ${{ secrets.CLUSTER_NAME }}
-              id: login
-
-            - run: kubectl apply -f packages/infra/k8s-depl-prod && kubectl apply -f packages/infra/k8s-prod
+            - run: echo "Deploying manifest prod"
