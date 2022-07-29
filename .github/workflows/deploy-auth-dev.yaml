@@ -7,7 +7,15 @@ on:
             - "packages/auth/**"
     workflow_dispatch:
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - run: echo "Deploying auth dev"
+   runs-auth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger-cd-workflows
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: deploy-auth-prod
+          token: ${{ secrets.MAIN_GITHUB_TOKEN }}
+   build:
+       runs-on: ubuntu-latest
+       steps:
+           - run: echo "Deploying auth dev"
