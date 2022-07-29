@@ -10,8 +10,7 @@ on:
         default: "dev"
         options:
           - dev
-          - master
-          - staging
+          - prod
 jobs:
   runs-auth:
     runs-on: ubuntu-latest
