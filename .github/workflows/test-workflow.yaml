@@ -13,9 +13,22 @@ on:
         required: true
         default: false
       service-name:
-        type: string
-        description: "service name"
+        type: choice
+        description: "service name, used to get the envs from the service"
         required: false
+        options:
+          - accounts_service
+          - domains
+          - subscriptions
+          - store_payments
+          - products
+          - orders
+          - shipping
+          - store
+          - webhooks
+          - external_integrations
+          - store_customers
+          - files
       image:
         type: string
         description: "The image name ex: ghcr.io/wuilt/accounts-service"
@@ -71,7 +84,7 @@ on:
         default: eu-central-1
 jobs:
   trigger-job:
-    name: Apply for backoffice-${{inputs.serviceName}}-${{inputs.tag}}
+    name: Apply for backoffice-${{inputs.service-name}}-${{inputs.tag}}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -151,7 +164,7 @@ jobs:
               --set backoffice_init.tag="${{inputs.tag}}" \
               --set backoffice_init.image="${{inputs.image}}" \
               --set backoffice_init.service_url="${{inputs.service_url}}" \
-              --set backoffice.bugsnag_api_key="{{ .Values.${{inputs.serviceName}}.bugsnag_api_key }}" > job.yaml
+              --set backoffice.bugsnag_api_key="{{ .Values.${{inputs.service-name}}.bugsnag_api_key }}" > job.yaml
 
       - name: Run Job
         if: ${{inputs.cloud == 'aws' }}
