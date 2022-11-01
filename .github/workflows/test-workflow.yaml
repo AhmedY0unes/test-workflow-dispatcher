@@ -2,19 +2,19 @@ name: Trigger service backoffice-init Job
 on:
   workflow_dispatch:
     inputs:
+      enabled:
+        type: boolean
+        description: "Enable Job"
+        required: false
+        default: true
       deleteIfExist:
         type: boolean
         description: "Delete the migration job if already exist!! ⚠️"
         required: true
         default: false
-      enabled:
-        type: boolean
-        description: "Apply migration on which environment"
-        required: false
-        default: true
       service-name:
         type: string
-        description: "The database uri"
+        description: "service name"
         required: false
       image:
         type: string
