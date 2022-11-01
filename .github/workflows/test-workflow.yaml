@@ -1,0 +1,165 @@
+name: Trigger service backoffice-init Job
+on:
+  workflow_dispatch:
+    inputs:
+      deleteIfExist:
+        type: boolean
+        description: "Delete the migration job if already exist!! ⚠️"
+        required: true
+        default: false
+      enabled:
+        type: boolean
+        description: "Apply migration on which environment"
+        required: false
+        default: true
+      service-name:
+        type: string
+        description: "The database uri"
+        required: false
+      image:
+        type: string
+        description: "The image name ex: ghcr.io/wuilt/accounts-service"
+        required: true
+      tag:
+        type: string
+        description: "The image tag"
+        required: true
+        default: "canary"
+      service_url:
+        type: choice
+        description: "The service url"
+        required: true
+        options:
+          - http://accounts-backoffice:3001/
+          - http://products:3004/
+          - http://store_customers:3005/
+          - http://domains:3002/
+          - http://external-integrations:3011/
+          - http://files:3003/
+          - http://shipping/3020
+          - http://orders:3006/
+          - http://backoffice-site
+          - http://stores:3007/
+          - http://stores-payments:3008/
+          - http://subscriptions:3009/
+      cloud:
+        type: choice
+        description: "The cloud provider"
+        required: true
+        options:
+          - aws
+          - azure
+      cluster-name:
+        required: true
+        description: Name of k8s cluster
+        type: choice
+        options:
+          - eks-wuilt-prod
+          - wuilt-canary-aks
+          - wuilt-staging
+      resource-group:
+        required: false
+        description: Resource Group (azure)
+        type: choice
+        options:
+          - wuilt-canary
+          - wuilt-staging
+      region:
+        required: false
+        description: Resource Group (aws)
+        type: string
+        default: eu-central-1
+jobs:
+  trigger-job:
+    name: Apply for backoffice-${{inputs.serviceName}}-${{inputs.tag}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        id: checkout
+        uses: actions/checkout@v2
+
+      - name: Install Kubectl & Helm
+        run: |
+          sudo apt-get install -y apt-transport-https ca-certificates curl
+          sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+          curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
+          echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+          echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install -y helm kubectl
+
+      # azure
+      - name: Azure Login
+        if: ${{ inputs.cloud == 'azure' }}
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - uses: azure/aks-set-context@v1
+        if: ${{ inputs.cloud == 'azure' }}
+        with:
+          creds: "${{ secrets.AZURE_CREDENTIALS }}"
+          cluster-name: ${{ inputs.cluster-name }}
+          resource-group: ${{ inputs.resource-group }}
+
+      - name: Delete backoffice-init job if ${{inputs.deleteIfExist}} is true for azure
+        if: ${{inputs.deleteIfExist}} && ${{inputs.cloud == 'azure' }}
+        run: |
+          kubectl delete job backoffice-init -n ${{ inputs.namespace}}
+
+      - name: Run Job
+        if: ${{inputs.cloud == 'azure' }}
+        run: |
+          cd ./helm
+          helm dependency update
+          helm template -s templates/backoffice-init.yml . --values ./values-canary.yaml \
+              --set backoffice_init.enabled="${{inputs.enabled}}" \
+              --set backoffice_init.tag="${{inputs.tag}}" \
+              --set backoffice_init.image="${{inputs.image}}" \
+              --set backoffice_init.service_url="${{inputs.service_url}}" \
+              --set backoffice.bugsnag_api_key="{{ .Values.${{inputs.service-name}}.bugsnag_api_key }}" \
+              | kubectl apply -n ${{ inputs.namespace }} -f -
+
+      # AWS
+      - name: Configure AWS credentials
+        if: ${{ inputs.cloud == 'aws' }}
+        id: config-aws
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Delete backoffice-init job if ${{inputs.deleteIfExist}} is true for aws
+        if: ${{inputs.deleteIfExist}} && ${{inputs.cloud == 'aws' }}
+        uses: ianbelcher/eks-kubectl-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ inputs.region }}
+          cluster_name: ${{ inputs.cluster-name }}
+          args: |
+            delete job -n ${{ inputs.namespace }} backoffice-init
+
+      - name: fill values
+        if: ${{inputs.cloud == 'aws' }}
+        run: |
+          cd ./helm 
+          helm dependency update 
+          helm template -s templates/backoffice-init.yml . --values ./values-${{ inputs.tag }}.yaml \
+              --set backoffice_init.enabled="${{inputs.enabled}}" \
+              --set backoffice_init.tag="${{inputs.tag}}" \
+              --set backoffice_init.image="${{inputs.image}}" \
+              --set backoffice_init.service_url="${{inputs.service_url}}" \
+              --set backoffice.bugsnag_api_key="{{ .Values.${{inputs.serviceName}}.bugsnag_api_key }}" > job.yaml
+
+      - name: Run Job
+        if: ${{inputs.cloud == 'aws' }}
+        uses: ianbelcher/eks-kubectl-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ inputs.region }}
+          cluster_name: ${{ inputs.cluster-name }}
+          args: |
+            apply -n ${{ inputs.namespace }} -f ./helm/job.yaml
